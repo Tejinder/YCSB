@@ -87,7 +87,7 @@ public class CoreWorkload extends Workload {
    * Default number of fields in a record.
    */
   public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
-  
+
   private List<String> fieldnames;
 
   /**
@@ -240,6 +240,27 @@ public class CoreWorkload extends Workload {
    */
   public static final String SCAN_PROPORTION_PROPERTY_DEFAULT = "0.0";
 
+
+  /**
+   * The name of the property for the proportion of transactions that are arrayscans.
+   */
+  public static final String ARRAYSCAN_PROPORTION_PROPERTY = "arrayscanproportion";
+
+  /**
+   * The default proportion of transactions that are scans.
+   */
+  public static final String ARRAYSCAN_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+  /**
+   * The name of the property for the proportion of transactions that are search.
+   */
+  public static final String SEARCH_PROPORTION_PROPERTY = "searchproportion";
+
+  /**
+   * The default proportion of transactions that are search.
+   */
+  public static final String SEARCH_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
   /**
    * The name of the property for the proportion of transactions that are read-modify-write.
    */
@@ -249,6 +270,61 @@ public class CoreWorkload extends Workload {
    * The default proportion of transactions that are scans.
    */
   public static final String READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+  /**
+   * The name of the property for the proportion of transactions that are graph traversals.
+   */
+  public static final String GRAPHTRAVERSAL_PROPORTION_PROPERTY = "graphtraversalproportion";
+
+
+  /**
+   * The default proportion of transactions that are graph traversals.
+   */
+  public static final String GRAPHTRAVERSAL_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+  /**
+   * The name of the property for the proportion of transactions for graph shortest path.
+   */
+  public static final String GRAPHSHORTESTPATH_PROPORTION_PROPERTY = "graphshortestpathproportion";
+
+  /**
+   * The default proportion of transactions for graph shortest path.
+   */
+  public static final String GRAPHSHORTESTPATH_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+
+  /**
+   * The name of the property for the proportion of transactions that are joins.
+   */
+  public static final String JOIN_PROPORTION_PROPERTY = "joinproportion";
+
+
+  /**
+   * The name of the property for the proportion of transactions that are joins.
+   */
+  public static final String JOIN_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+  /**
+   * The name of the property for the proportion of transactions that are groupby.
+   */
+  public static final String GROUP_PROPORTION_PROPERTY = "groupproportion";
+
+
+  /**
+   * The name of the property for the proportion of transactions that are groupby.
+   */
+  public static final String GROUP_PROPORTION_PROPERTY_DEFAULT = "0.0";
+
+  /**
+   * The name of the property for the proportion of transactions that are aggregate.
+   */
+  public static final String AGGREGATE_PROPORTION_PROPERTY = "aggregateproportion";
+
+
+  /**
+   * The name of the property for the proportion of transactions that are aggregate.
+   */
+  public static final String AGGREGATE_PROPORTION_PROPERTY_DEFAULT = "0.0";
 
   /**
    * The name of the property for the the distribution of requests across the keyspace. Options are
@@ -362,6 +438,12 @@ public class CoreWorkload extends Workload {
   protected NumberGenerator fieldchooser;
   protected AcknowledgedCounterGenerator transactioninsertkeysequence;
   protected NumberGenerator scanlength;
+  protected NumberGenerator arrayscanlength;
+  protected NumberGenerator searchlength;
+  protected NumberGenerator joinlength;
+  protected NumberGenerator grouplength;
+  protected NumberGenerator aggregatelength;
+
   protected boolean orderedinserts;
   protected long fieldcount;
   protected long recordcount;
@@ -534,8 +616,12 @@ public class CoreWorkload extends Workload {
 
     if (scanlengthdistrib.compareTo("uniform") == 0) {
       scanlength = new UniformLongGenerator(minscanlength, maxscanlength);
+      arrayscanlength = new UniformLongGenerator(minscanlength, maxscanlength);
+      searchlength = new UniformLongGenerator(minscanlength, maxscanlength);
     } else if (scanlengthdistrib.compareTo("zipfian") == 0) {
       scanlength = new ZipfianGenerator(minscanlength, maxscanlength);
+      arrayscanlength = new ZipfianGenerator(minscanlength, maxscanlength);
+      searchlength = new ZipfianGenerator(minscanlength, maxscanlength);
     } else {
       throw new WorkloadException(
           "Distribution \"" + scanlengthdistrib + "\" not allowed for scan length");
@@ -672,6 +758,27 @@ public class CoreWorkload extends Workload {
     case "SCAN":
       doTransactionScan(db);
       break;
+    case "ARRAYSCAN":
+        doTransactionArrayScan(db);
+        break;
+    case "GRAPHTRAVERSAL":
+        doTransactionGraphTraversal(db);
+        break;
+    case "GRAPHSHORTESTPATH":
+        doTransactionGraphShortestPath(db);
+        break;
+    case "JOIN":
+        doTransactionJoin(db);
+        break;
+    case "GROUP":
+        doTransactionGroup(db);
+        break;
+    case "AGGREGATE":
+        doTransactionAggregate(db);
+        break;
+    case "SEARCH":
+        doTransactionSearch(db);
+        break;
     default:
       doTransactionReadModifyWrite(db);
     }
@@ -815,6 +922,166 @@ public class CoreWorkload extends Workload {
     db.scan(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
   }
 
+
+  public void doTransactionArrayScan(DB db) {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = arrayscanlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.arrayscan(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+          }
+
+  public void doTransactionSearch(DB db) {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = searchlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.search(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+          }
+
+
+  public void doTransactionGraphTraversal(DB db) {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = scanlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.graphTraversal(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+  }
+
+
+  public void doTransactionGraphShortestPath(DB db) {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = scanlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.graphShortestPath(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+          }
+
+
+  public void doTransactionJoin(DB db) {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = scanlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.join(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+          }
+
+  public void doTransactionGroup(DB db)
+  {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = scanlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.group(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+  }
+
+  public void doTransactionAggregate(DB db)
+  {
+            // choose a random key
+            long keynum = nextKeynum();
+
+            String startkeyname = CoreWorkload.buildKeyName(keynum, zeropadding, orderedinserts);
+
+            // choose a random scan length
+            int len = scanlength.nextValue().intValue();
+
+            HashSet<String> fields = null;
+
+            if (!readallfields) {
+              // read a random field
+              String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+              fields = new HashSet<String>();
+              fields.add(fieldname);
+            }
+
+            db.aggregate(table, startkeyname, len, fields, new Vector<HashMap<String, ByteIterator>>());
+  }
+
   public void doTransactionUpdate(DB db) {
     // choose a random key
     long keynum = nextKeynum();
@@ -870,8 +1137,31 @@ public class CoreWorkload extends Workload {
         p.getProperty(INSERT_PROPORTION_PROPERTY, INSERT_PROPORTION_PROPERTY_DEFAULT));
     final double scanproportion = Double.parseDouble(
         p.getProperty(SCAN_PROPORTION_PROPERTY, SCAN_PROPORTION_PROPERTY_DEFAULT));
+
+    final double arrayscanproportion = Double.parseDouble(
+            p.getProperty(ARRAYSCAN_PROPORTION_PROPERTY, ARRAYSCAN_PROPORTION_PROPERTY_DEFAULT));
+
+    final double searchproportion = Double.parseDouble(
+            p.getProperty(SEARCH_PROPORTION_PROPERTY, SEARCH_PROPORTION_PROPERTY_DEFAULT));
+
     final double readmodifywriteproportion = Double.parseDouble(p.getProperty(
         READMODIFYWRITE_PROPORTION_PROPERTY, READMODIFYWRITE_PROPORTION_PROPERTY_DEFAULT));
+
+    final double graphTraversalproportion = Double.parseDouble(p.getProperty(
+            GRAPHTRAVERSAL_PROPORTION_PROPERTY, GRAPHTRAVERSAL_PROPORTION_PROPERTY_DEFAULT));
+
+    final double graphShortestPathproportion = Double.parseDouble(p.getProperty(
+            GRAPHSHORTESTPATH_PROPORTION_PROPERTY, GRAPHSHORTESTPATH_PROPORTION_PROPERTY_DEFAULT));
+
+
+    final double joinproportion = Double.parseDouble(p.getProperty(
+            JOIN_PROPORTION_PROPERTY, JOIN_PROPORTION_PROPERTY_DEFAULT));
+
+    final double groupproportion = Double.parseDouble(p.getProperty(
+            GROUP_PROPORTION_PROPERTY, GROUP_PROPORTION_PROPERTY_DEFAULT));
+
+    final double aggregateproportion = Double.parseDouble(p.getProperty(
+            AGGREGATE_PROPORTION_PROPERTY, AGGREGATE_PROPORTION_PROPERTY_DEFAULT));
 
     final DiscreteGenerator operationchooser = new DiscreteGenerator();
     if (readproportion > 0) {
@@ -890,9 +1180,39 @@ public class CoreWorkload extends Workload {
       operationchooser.addValue(scanproportion, "SCAN");
     }
 
+    if (arrayscanproportion > 0) {
+      operationchooser.addValue(arrayscanproportion, "ARRAYSCAN");
+    }
+
+
     if (readmodifywriteproportion > 0) {
       operationchooser.addValue(readmodifywriteproportion, "READMODIFYWRITE");
     }
+
+    if (graphTraversalproportion > 0) {
+        operationchooser.addValue(graphTraversalproportion, "GRAPHTRAVERSAL");
+    }
+
+    if (graphShortestPathproportion > 0) {
+        operationchooser.addValue(graphShortestPathproportion, "GRAPHSHORTESTPATH");
+    }
+
+    if (joinproportion > 0) {
+        operationchooser.addValue(joinproportion, "JOIN");
+    }
+
+    if (groupproportion > 0) {
+        operationchooser.addValue(groupproportion, "GROUP");
+    }
+
+    if (aggregateproportion > 0) {
+        operationchooser.addValue(aggregateproportion, "AGGREGATE");
+    }
+
+    if (searchproportion > 0) {
+        operationchooser.addValue(searchproportion, "SEARCH");
+    }
+
     return operationchooser;
   }
 }
