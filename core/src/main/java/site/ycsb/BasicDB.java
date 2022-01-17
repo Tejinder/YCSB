@@ -19,7 +19,6 @@ package site.ycsb;
 
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.LockSupport;
@@ -30,7 +29,7 @@ import java.util.concurrent.locks.LockSupport;
 public class BasicDB extends DB {
   public static final String COUNT = "basicdb.count";
   public static final String COUNT_DEFAULT = "false";
-  
+
   public static final String VERBOSE = "basicdb.verbose";
   public static final String VERBOSE_DEFAULT = "true";
 
@@ -44,10 +43,17 @@ public class BasicDB extends DB {
   protected static int counter = 0;
   protected static Map<Integer, Integer> reads;
   protected static Map<Integer, Integer> scans;
+  protected static Map<Integer, Integer> arrayscans;
   protected static Map<Integer, Integer> updates;
   protected static Map<Integer, Integer> inserts;
   protected static Map<Integer, Integer> deletes;
-  
+
+  protected static Map<Integer, Integer> joins;
+  protected static Map<Integer, Integer> groups;
+  protected static Map<Integer, Integer> aggregates;
+
+  protected static Map<Integer, Integer> searches;
+
   protected boolean verbose;
   protected boolean randomizedelay;
   protected int todelay;
@@ -98,7 +104,7 @@ public class BasicDB extends DB {
         System.out.println("**********************************************");
       }
     }
-    
+
     synchronized (MUTEX) {
       if (counter == 0 && count) {
         reads = new HashMap<Integer, Integer>();
@@ -106,6 +112,12 @@ public class BasicDB extends DB {
         updates = new HashMap<Integer, Integer>();
         inserts = new HashMap<Integer, Integer>();
         deletes = new HashMap<Integer, Integer>();
+        arrayscans = new HashMap<Integer, Integer>();
+
+        joins = new HashMap<Integer, Integer>();
+        groups = new HashMap<Integer, Integer>();
+        aggregates = new HashMap<Integer, Integer>();
+        searches = new HashMap<Integer, Integer>();
       }
       counter++;
     }
@@ -154,7 +166,7 @@ public class BasicDB extends DB {
     if (count) {
       incCounter(reads, hash(table, key, fields));
     }
-    
+
     return Status.OK;
   }
 
@@ -187,7 +199,7 @@ public class BasicDB extends DB {
       sb.append("]");
       System.out.println(sb);
     }
-    
+
     if (count) {
       incCounter(scans, hash(table, startkey, fields));
     }
@@ -195,6 +207,59 @@ public class BasicDB extends DB {
     return Status.OK;
   }
 
+  public Status arrayscan(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result)
+  {
+          delay();
+
+          if (verbose) {
+                  StringBuilder sb = getStringBuilder();
+                  sb.append("ARRAYSCAN ").append(table).append(" ").append(startkey).append(" ").append(recordcount).append(" [ ");
+                  if (fields != null) {
+                          for (String f : fields) {
+                                  sb.append(f).append(" ");
+                          }
+                  } else {
+                          sb.append("<all fields>");
+                  }
+
+                  sb.append("]");
+                  System.out.println(sb);
+          }
+
+          if (count) {
+                  incCounter(arrayscans, hash(table, startkey, fields));
+          }
+
+          return Status.OK;
+  }
+
+
+  public Status search(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result) {
+          delay();
+
+          if (verbose) {
+                  StringBuilder sb = getStringBuilder();
+                  sb.append("SEARCH ").append(table).append(" ").append(startkey).append(" ").append(recordcount).append(" [ ");
+                  if (fields != null) {
+                          for (String f : fields) {
+                                  sb.append(f).append(" ");
+                          }
+                  } else {
+                          sb.append("<all fields>");
+                  }
+
+                  sb.append("]");
+                  System.out.println(sb);
+          }
+
+          if (count) {
+                  incCounter(searches, hash(table, startkey, fields));
+          }
+
+          return Status.OK;
+  }
   /**
    * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the
    * record with the specified record key, overwriting any existing values with the same field name.
@@ -222,7 +287,7 @@ public class BasicDB extends DB {
     if (count) {
       incCounter(updates, hash(table, key, values));
     }
-    
+
     return Status.OK;
   }
 
@@ -254,7 +319,7 @@ public class BasicDB extends DB {
     if (count) {
       incCounter(inserts, hash(table, key, values));
     }
-    
+
     return Status.OK;
   }
 
@@ -278,26 +343,126 @@ public class BasicDB extends DB {
     if (count) {
       incCounter(deletes, (table + key).hashCode());
     }
-    
+
     return Status.OK;
   }
+  @Override
+  public Status graphTraversal(String table, String startkey, int recordcount, Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
 
+          return Status.OK;
+
+  }
+
+  @Override
+  public Status graphShortestPath(String table, String startkey, int recordcount, Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+
+          return Status.OK;
+
+  }
+
+  public Status join(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result)
+  {
+                delay();
+
+                if (verbose) {
+                StringBuilder sb = getStringBuilder();
+                sb.append("JOIN ").append(table).append(" ").append(startkey).append(" ").append(recordcount).append(" [ ");
+                if (fields != null) {
+                for (String f : fields) {
+                sb.append(f).append(" ");
+                }
+                } else {
+                sb.append("<all fields>");
+                }
+
+                sb.append("]");
+                System.out.println(sb);
+                }
+
+                if (count) {
+                incCounter(joins, hash(table, startkey, fields));
+                }
+
+                return Status.OK;
+  }
+
+  public Status group(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result)
+  {
+                delay();
+
+                if (verbose) {
+                StringBuilder sb = getStringBuilder();
+                sb.append("GROUP ").append(table).append(" ").append(startkey).append(" ").append(recordcount).append(" [ ");
+                if (fields != null) {
+                for (String f : fields) {
+                sb.append(f).append(" ");
+                }
+                } else {
+                sb.append("<all fields>");
+                }
+
+                sb.append("]");
+                System.out.println(sb);
+                }
+
+                if (count) {
+                        incCounter(groups, hash(table, startkey, fields));
+                }
+
+                return Status.OK;
+  }
+
+  public Status aggregate(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result)
+  {
+                delay();
+
+                if (verbose) {
+                StringBuilder sb = getStringBuilder();
+                sb.append("AGGREGATE ").append(table).append(" ").append(startkey).append(" ").append(recordcount).append(" [ ");
+                if (fields != null) {
+                for (String f : fields) {
+                sb.append(f).append(" ");
+                }
+                } else {
+                sb.append("<all fields>");
+                }
+
+                sb.append("]");
+                System.out.println(sb);
+                }
+
+                if (count) {
+                        incCounter(aggregates, hash(table, startkey, fields));
+                }
+
+                return Status.OK;
+  }
   @Override
   public void cleanup() {
     synchronized (MUTEX) {
       int countDown = --counter;
       if (count && countDown < 1) {
-        // TODO - would be nice to call something like: 
+        // TODO - would be nice to call something like:
         // Measurements.getMeasurements().oneOffMeasurement("READS", "Uniques", reads.size());
         System.out.println("[READS], Uniques, " + reads.size());
         System.out.println("[SCANS], Uniques, " + scans.size());
         System.out.println("[UPDATES], Uniques, " + updates.size());
         System.out.println("[INSERTS], Uniques, " + inserts.size());
         System.out.println("[DELETES], Uniques, " + deletes.size());
+        System.out.println("[ARRAYSCANS], Uniques, " + arrayscans.size());
+        System.out.println("[JOINS], Uniques, " + joins.size());
+        System.out.println("[GROUPS], Uniques, " + groups.size());
+        System.out.println("[AGGREGATES], Uniques, " + aggregates.size());
+        System.out.println("[SEARCHES], Uniques, " + searches.size());
       }
     }
   }
-  
+
   /**
    * Increments the count on the hash in the map.
    * @param map A non-null map to sync and use for incrementing.
@@ -313,7 +478,7 @@ public class BasicDB extends DB {
       }
     }
   }
-  
+
   /**
    * Hashes the table, key and fields, sorting the fields first for a consistent
    * hash.
@@ -336,7 +501,7 @@ public class BasicDB extends DB {
     }
     return buf.toString().hashCode();
   }
-  
+
   /**
    * Hashes the table, key and fields, sorting the fields first for a consistent
    * hash.
@@ -351,9 +516,9 @@ public class BasicDB extends DB {
     if (values == null) {
       return (table + key).hashCode();
     }
-    final TreeMap<String, ByteIterator> sorted = 
+    final TreeMap<String, ByteIterator> sorted =
         new TreeMap<String, ByteIterator>(values);
-    
+
     StringBuilder buf = getStringBuilder().append(table).append(key);
     for (final Entry<String, ByteIterator> entry : sorted.entrySet()) {
       entry.getValue().reset();
@@ -362,7 +527,7 @@ public class BasicDB extends DB {
     }
     return buf.toString().hashCode();
   }
-  
+
   /**
    * Short test of BasicDB
    */
