@@ -46,21 +46,21 @@ import site.ycsb.measurements.Measurements;
 import org.testng.annotations.Test;
 
 public class TestTimeSeriesWorkload {
-  
+
   @Test
   public void twoThreads() throws Exception {
     final Properties p = getUTProperties();
     Measurements.setProperties(p);
-    
+
     final TimeSeriesWorkload wl = new TimeSeriesWorkload();
     wl.init(p);
     Object threadState = wl.initThread(p, 0, 2);
-    
+
     MockDB db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     long timestamp = 1451606400;
@@ -77,13 +77,13 @@ public class TestTimeSeriesWorkload {
         timestamp += 60;
       }
     }
-    
+
     threadState = wl.initThread(p, 1, 2);
     db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     timestamp = 1451606400;
@@ -101,30 +101,30 @@ public class TestTimeSeriesWorkload {
       }
     }
   }
-  
+
   @Test (expectedExceptions = WorkloadException.class)
   public void badTimeUnit() throws Exception {
     final Properties p = new Properties();
     p.put(TimeSeriesWorkload.TIMESTAMP_UNITS_PROPERTY, "foobar");
     getWorkload(p, true);
   }
-  
+
   @Test (expectedExceptions = WorkloadException.class)
   public void failedToInitWorkloadBeforeThreadInit() throws Exception {
     final Properties p = getUTProperties();
     final TimeSeriesWorkload wl = getWorkload(p, false);
     //wl.init(p); // <-- we NEED this :(
     final Object threadState = wl.initThread(p, 0, 2);
-    
+
     final MockDB db = new MockDB();
     wl.doInsert(db, threadState);
   }
-  
+
   @Test (expectedExceptions = IllegalStateException.class)
   public void failedToInitThread() throws Exception {
     final Properties p = getUTProperties();
     final TimeSeriesWorkload wl = getWorkload(p, true);
-    
+
     final MockDB db = new MockDB();
     wl.doInsert(db, null);
   }
@@ -155,19 +155,19 @@ public class TestTimeSeriesWorkload {
       timestamp += 60;
     }
   }
-  
+
   @Test
   public void insertOneKeyTwoTagsLowCardinality() throws Exception {
     final Properties p = getUTProperties();
     p.put(CoreWorkload.FIELD_COUNT_PROPERTY, "1");
     final TimeSeriesWorkload wl = getWorkload(p, true);
     final Object threadState = wl.initThread(p, 0, 1);
-    
+
     final MockDB db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     long timestamp = 1451606400;
@@ -186,19 +186,19 @@ public class TestTimeSeriesWorkload {
       }
     }
   }
-  
+
   @Test
   public void insertTwoKeysTwoTagsLowCardinality() throws Exception {
     final Properties p = getUTProperties();
-    
+
     final TimeSeriesWorkload wl = getWorkload(p, true);
     final Object threadState = wl.initThread(p, 0, 1);
-    
+
     final MockDB db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     long timestamp = 1451606400;
@@ -225,19 +225,19 @@ public class TestTimeSeriesWorkload {
       }
     }
   }
-  
+
   @Test
   public void insertTwoKeysTwoThreads() throws Exception {
     final Properties p = getUTProperties();
-    
+
     final TimeSeriesWorkload wl = getWorkload(p, true);
     Object threadState = wl.initThread(p, 0, 2);
-    
+
     MockDB db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     long timestamp = 1451606400;
@@ -255,13 +255,13 @@ public class TestTimeSeriesWorkload {
         timestamp += 60;
       }
     }
-    
+
     threadState = wl.initThread(p, 1, 2);
     db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     timestamp = 1451606400;
@@ -279,21 +279,21 @@ public class TestTimeSeriesWorkload {
       }
     }
   }
-  
+
   @Test
   public void insertThreeKeysTwoThreads() throws Exception {
     // To make sure the distribution doesn't miss any metrics
     final Properties p = getUTProperties();
     p.put(CoreWorkload.FIELD_COUNT_PROPERTY, "3");
-    
+
     final TimeSeriesWorkload wl = getWorkload(p, true);
     Object threadState = wl.initThread(p, 0, 2);
-    
+
     MockDB db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     long timestamp = 1451606400;
@@ -311,13 +311,13 @@ public class TestTimeSeriesWorkload {
         timestamp += 60;
       }
     }
-    
+
     threadState = wl.initThread(p, 1, 2);
     db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     timestamp = 1451606400;
     int metricCtr = 0;
     for (int i = 0; i < db.keys.size(); i++) {
@@ -341,7 +341,7 @@ public class TestTimeSeriesWorkload {
       }
     }
   }
-  
+
   @Test
   public void insertWithValidation() throws Exception {
     final Properties p = getUTProperties();
@@ -350,12 +350,12 @@ public class TestTimeSeriesWorkload {
     p.put(TimeSeriesWorkload.VALUE_TYPE_PROPERTY, "integers");
     final TimeSeriesWorkload wl = getWorkload(p, true);
     final Object threadState = wl.initThread(p, 0, 1);
-    
+
     final MockDB db = new MockDB();
     for (int i = 0; i < 74; i++) {
       assertTrue(wl.doInsert(db, threadState));
     }
-    
+
     assertEquals(db.keys.size(), 74);
     assertEquals(db.values.size(), 74);
     long timestamp = 1451606400;
@@ -366,19 +366,19 @@ public class TestTimeSeriesWorkload {
           TimeSeriesWorkload.TIMESTAMP_KEY_PROPERTY_DEFAULT).toArray()), timestamp);
       assertFalse(((NumericByteIterator) db.values.get(i)
           .get(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT)).isFloatingPoint());
-      
+
       // validation check
       final TreeMap<String, String> validationTags = new TreeMap<String, String>();
       for (final Entry<String, ByteIterator> entry : db.values.get(i).entrySet()) {
-        if (entry.getKey().equals(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT) || 
+        if (entry.getKey().equals(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT) ||
             entry.getKey().equals(TimeSeriesWorkload.TIMESTAMP_KEY_PROPERTY_DEFAULT)) {
           continue;
         }
         validationTags.put(entry.getKey(), entry.getValue().toString());
       }
-      assertEquals(wl.validationFunction(db.keys.get(i), timestamp, validationTags), 
+      assertEquals(wl.validationFunction(db.keys.get(i), timestamp, validationTags),
           ((NumericByteIterator) db.values.get(i).get(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT)).getLong());
-      
+
       if (i % 2 == 0) {
         assertEquals(db.values.get(i).get("AB").toString(), "AAAA");
       } else {
@@ -387,45 +387,45 @@ public class TestTimeSeriesWorkload {
       }
     }
   }
-  
+
   @Test
   public void read() throws Exception {
     final Properties p = getUTProperties();
     final TimeSeriesWorkload wl = getWorkload(p, true);
     final Object threadState = wl.initThread(p, 0, 1);
-    
+
     final MockDB db = new MockDB();
     for (int i = 0; i < 20; i++) {
       wl.doTransactionRead(db, threadState);
     }
   }
-  
+
   @Test
   public void verifyRow() throws Exception {
     final Properties p = getUTProperties();
     final TimeSeriesWorkload wl = getWorkload(p, true);
-    
+
     final TreeMap<String, String> validationTags = new TreeMap<String, String>();
     final HashMap<String, ByteIterator> cells = new HashMap<String, ByteIterator>();
-    
+
     validationTags.put("AA", "AAAA");
     cells.put("AA", new StringByteIterator("AAAA"));
     validationTags.put("AB", "AAAB");
     cells.put("AB", new StringByteIterator("AAAB"));
     long hash = wl.validationFunction("AAAA", 1451606400L, validationTags);
-        
+
     cells.put(TimeSeriesWorkload.TIMESTAMP_KEY_PROPERTY_DEFAULT, new NumericByteIterator(1451606400L));
     cells.put(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT, new NumericByteIterator(hash));
-    
+
     assertEquals(wl.verifyRow("AAAA", cells), Status.OK);
-    
+
     // tweak the last value a bit
     for (final ByteIterator it : cells.values()) {
       it.reset();
     }
     cells.put(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT, new NumericByteIterator(hash + 1));
     assertEquals(wl.verifyRow("AAAA", cells), Status.UNEXPECTED_STATE);
-    
+
     // no value cell, returns an unexpected state
     for (final ByteIterator it : cells.values()) {
       it.reset();
@@ -433,25 +433,25 @@ public class TestTimeSeriesWorkload {
     cells.remove(TimeSeriesWorkload.VALUE_KEY_PROPERTY_DEFAULT);
     assertEquals(wl.verifyRow("AAAA", cells), Status.UNEXPECTED_STATE);
   }
-  
+
   @Test
   public void validateSettingsDataIntegrity() throws Exception {
     Properties p = getUTProperties();
-    
+
     // data validation incompatibilities
     p.setProperty(CoreWorkload.DATA_INTEGRITY_PROPERTY, "true");
     try {
       getWorkload(p, true);
       fail("Expected WorkloadException");
     } catch (WorkloadException e) { }
-    
+
     p.setProperty(TimeSeriesWorkload.VALUE_TYPE_PROPERTY, "integers"); // now it's ok
     p.setProperty(TimeSeriesWorkload.GROUPBY_PROPERTY, "sum"); // now it's not
     try {
       getWorkload(p, true);
       fail("Expected WorkloadException");
     } catch (WorkloadException e) { }
-    
+
     p.setProperty(TimeSeriesWorkload.GROUPBY_PROPERTY, "");
     p.setProperty(TimeSeriesWorkload.DOWNSAMPLING_FUNCTION_PROPERTY, "sum");
     p.setProperty(TimeSeriesWorkload.DOWNSAMPLING_INTERVAL_PROPERTY, "60");
@@ -459,7 +459,7 @@ public class TestTimeSeriesWorkload {
       getWorkload(p, true);
       fail("Expected WorkloadException");
     } catch (WorkloadException e) { }
-    
+
     p.setProperty(TimeSeriesWorkload.DOWNSAMPLING_FUNCTION_PROPERTY, "");
     p.setProperty(TimeSeriesWorkload.DOWNSAMPLING_INTERVAL_PROPERTY, "");
     p.setProperty(TimeSeriesWorkload.QUERY_TIMESPAN_PROPERTY, "60");
@@ -467,7 +467,7 @@ public class TestTimeSeriesWorkload {
       getWorkload(p, true);
       fail("Expected WorkloadException");
     } catch (WorkloadException e) { }
-    
+
     p = getUTProperties();
     p.setProperty(CoreWorkload.DATA_INTEGRITY_PROPERTY, "true");
     p.setProperty(TimeSeriesWorkload.VALUE_TYPE_PROPERTY, "integers");
@@ -476,7 +476,7 @@ public class TestTimeSeriesWorkload {
       getWorkload(p, true);
       fail("Expected WorkloadException");
     } catch (WorkloadException e) { }
-    
+
     p.setProperty(TimeSeriesWorkload.RANDOMIZE_TIMESERIES_ORDER_PROPERTY, "false");
     p.setProperty(TimeSeriesWorkload.INSERT_START_PROPERTY, "");
     try {
@@ -484,7 +484,7 @@ public class TestTimeSeriesWorkload {
       fail("Expected WorkloadException");
     } catch (WorkloadException e) { }
   }
-  
+
   /** Helper method that generates unit testing defaults for the properties map */
   private Properties getUTProperties() {
     final Properties p = new Properties();
@@ -500,9 +500,9 @@ public class TestTimeSeriesWorkload {
     p.put(TimeSeriesWorkload.RANDOMIZE_TIMESERIES_ORDER_PROPERTY, "false");
     return p;
   }
-  
+
   /** Helper to setup the workload for testing. */
-  private TimeSeriesWorkload getWorkload(final Properties p, final boolean init) 
+  private TimeSeriesWorkload getWorkload(final Properties p, final boolean init)
       throws WorkloadException {
     Measurements.setProperties(p);
     if (!init) {
@@ -513,12 +513,12 @@ public class TestTimeSeriesWorkload {
       return workload;
     }
   }
-  
+
   static class MockDB extends DB {
     final List<String> keys = new ArrayList<String>();
-    final List<Map<String, ByteIterator>> values = 
+    final List<Map<String, ByteIterator>> values =
         new ArrayList<Map<String, ByteIterator>>();
-    
+
     @Override
     public Status read(String table, String key, Set<String> fields,
                        Map<String, ByteIterator> result) {
@@ -532,6 +532,19 @@ public class TestTimeSeriesWorkload {
       return Status.OK;
     }
 
+    @Override
+    public Status arrayscan(String table, String startkey, int recordcount,
+        Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+      // TODO Auto-generated method stub
+      return Status.OK;
+    }
+
+    @Override
+    public Status search(String table, String startkey, int recordcount,
+        Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+      // TODO Auto-generated method stub
+      return Status.OK;
+    }
     @Override
     public Status update(String table, String key,
         Map<String, ByteIterator> values) {
@@ -552,7 +565,43 @@ public class TestTimeSeriesWorkload {
       // TODO Auto-generated method stub
       return Status.OK;
     }
-    
+    @Override
+    public Status graphTraversal(String table, String startkey, int recordcount, Set<String> fields,
+        Vector<HashMap<String, ByteIterator>> result) {
+
+        return Status.OK;
+
+    }
+
+    @Override
+    public Status graphShortestPath(String table, String startkey, int recordcount, Set<String> fields,
+        Vector<HashMap<String, ByteIterator>> result) {
+
+        return Status.OK;
+
+    }
+    @Override
+    public Status join(String table, String startkey, int recordcount,
+        Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+      // TODO Auto-generated method stub
+      return Status.OK;
+    }
+
+    @Override
+    public Status group(String table, String startkey, int recordcount,
+        Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+      // TODO Auto-generated method stub
+      return Status.OK;
+    }
+
+    @Override
+    public Status aggregate(String table, String startkey, int recordcount,
+        Set<String> fields, Vector<HashMap<String, ByteIterator>> result) {
+      // TODO Auto-generated method stub
+      return Status.OK;
+    }
+
+
     public void dumpStdout() {
       for (int i = 0; i < keys.size(); i++) {
         System.out.print("[" + i + "] Key: " + keys.get(i) + " Values: {");
@@ -563,7 +612,7 @@ public class TestTimeSeriesWorkload {
           }
           System.out.print("{" + entry.getKey() + " => ");
           if (entry.getKey().equals("YCSBV")) {
-            System.out.print(new String(Utils.bytesToDouble(entry.getValue().toArray()) + "}"));  
+            System.out.print(new String(Utils.bytesToDouble(entry.getValue().toArray()) + "}"));
           } else if (entry.getKey().equals("YCSBTS")) {
             System.out.print(new String(Utils.bytesToLong(entry.getValue().toArray()) + "}"));
           } else {
@@ -575,3 +624,4 @@ public class TestTimeSeriesWorkload {
     }
   }
 }
+
