@@ -177,7 +177,7 @@ public class C8DBClient extends DB {
       //User Credentials
 
       String user = props.getProperty("c8db.user", "mm@macrometa.io");
-      String password = props.getProperty("c8db.password", "Macrometa123!@#");
+      String password = props.getProperty("c8db.password", "");
 
       joinoperation = Double.parseDouble(props.getProperty(JOIN_PROPORTION_PROPERTY, JOIN_PROPORTION_PROPERTY_DEFAULT));
 
