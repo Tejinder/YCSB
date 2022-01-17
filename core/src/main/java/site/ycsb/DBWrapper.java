@@ -17,8 +17,6 @@
 
 package site.ycsb;
 
-import java.util.Map;
-
 import site.ycsb.measurements.Measurements;
 import org.apache.htrace.core.TraceScope;
 import org.apache.htrace.core.Tracer;
@@ -51,7 +49,17 @@ public class DBWrapper extends DB {
   private final String scopeStringInsert;
   private final String scopeStringRead;
   private final String scopeStringScan;
+  private final String scopeStringArrayScan;
+  private final String scopeStringSearch;
   private final String scopeStringUpdate;
+
+  private final String scopeStringGraphTraversal;
+  private final String scopeStringGraphShortestPath;
+
+  private final String scopeStringJoin;
+  private final String scopeStringGroup;
+
+  private final String scopeStringAggregate;
 
   public DBWrapper(final DB db, final Tracer tracer) {
     this.db = db;
@@ -64,7 +72,14 @@ public class DBWrapper extends DB {
     scopeStringInsert = simple + "#insert";
     scopeStringRead = simple + "#read";
     scopeStringScan = simple + "#scan";
+    scopeStringArrayScan = simple + "#arrayscan";
     scopeStringUpdate = simple + "#update";
+    scopeStringGraphTraversal = simple + "#graphtraversal";
+    scopeStringGraphShortestPath = simple + "#graphshortestpath";
+    scopeStringJoin = simple + "#join";
+    scopeStringGroup = simple + "#group";
+    scopeStringAggregate = simple + "#aggregate";
+    scopeStringSearch = simple + "#search";
   }
 
   /**
@@ -170,6 +185,34 @@ public class DBWrapper extends DB {
     }
   }
 
+  public Status arrayscan(String table, String startkey, int recordcount,
+          Set<String> fields, Vector<HashMap<String, ByteIterator>> result)
+  {
+          try (final TraceScope span = tracer.newScope(scopeStringArrayScan)) {
+                  long ist = measurements.getIntendedStartTimeNs();
+                  long st = System.nanoTime();
+                  Status res = db.arrayscan(table, startkey, recordcount, fields, result);
+                  long en = System.nanoTime();
+                  measure("ARRAYSCAN", res, ist, st, en);
+                  measurements.reportStatus("ARRAYSCAN", res);
+                  return res;
+          }
+  }
+
+  public Status search(String table, String startkey, int recordcount,
+          Set<String> fields, Vector<HashMap<String, ByteIterator>> result)
+  {
+          try (final TraceScope span = tracer.newScope(scopeStringSearch)) {
+                  long ist = measurements.getIntendedStartTimeNs();
+                  long st = System.nanoTime();
+                  Status res = db.search(table, startkey, recordcount, fields, result);
+                  long en = System.nanoTime();
+                  measure("SEARCH", res, ist, st, en);
+                  measurements.reportStatus("SEARCH", res);
+                  return res;
+          }
+  }
+
   private void measure(String op, Status result, long intendedStartTimeNanos,
                        long startTimeNanos, long endTimeNanos) {
     String measurementName = op;
@@ -250,4 +293,77 @@ public class DBWrapper extends DB {
       return res;
     }
   }
+
+
+  public Status graphTraversal(String table, String startkey, int recordcount, Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+
+
+      try (final TraceScope span = tracer.newScope(scopeStringGraphTraversal)) {
+          long ist = measurements.getIntendedStartTimeNs();
+          long st = System.nanoTime();
+          Status res = db.graphTraversal(table, startkey, recordcount, fields, result);
+          long en = System.nanoTime();
+          measure("GRAPHTRAVERSAL", res, ist, st, en);
+          measurements.reportStatus("GRAPHTRAVERSAL", res);
+          return res;
+        }
+
+  }
+
+  public Status graphShortestPath(String table, String startkey, int recordcount, Set<String> fields,
+              Vector<HashMap<String, ByteIterator>> result) {
+
+
+              try (final TraceScope span = tracer.newScope(scopeStringGraphTraversal)) {
+                  long ist = measurements.getIntendedStartTimeNs();
+                  long st = System.nanoTime();
+                  Status res = db.graphShortestPath(table, startkey, recordcount, fields, result);
+                  long en = System.nanoTime();
+                  measure("GRAPHSHORTESTPATH", res, ist, st, en);
+                  measurements.reportStatus("GRAPHSHORTESTPATH", res);
+                  return res;
+                }
+
+          }
+
+  public Status join(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String, ByteIterator>> result)
+  {
+                try (final TraceScope span = tracer.newScope(scopeStringJoin)) {
+                long ist = measurements.getIntendedStartTimeNs();
+                long st = System.nanoTime();
+                Status res = db.join(table, startkey, recordcount, fields, result);
+                long en = System.nanoTime();
+                measure("JOIN", res, ist, st, en);
+                measurements.reportStatus("JOIN", res);
+                return res;
+                }
+  }
+
+  public Status group(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String, ByteIterator>> result)
+  {
+                try (final TraceScope span = tracer.newScope(scopeStringGroup)) {
+                long ist = measurements.getIntendedStartTimeNs();
+                long st = System.nanoTime();
+                Status res = db.group(table, startkey, recordcount, fields, result);
+                long en = System.nanoTime();
+                measure("GROUP", res, ist, st, en);
+                measurements.reportStatus("GROUP", res);
+                return res;
+                }
+  }
+
+  public Status aggregate(String table, String startkey, int recordcount, Set<String> fields, Vector<HashMap<String, ByteIterator>> result)
+  {
+                try (final TraceScope span = tracer.newScope(scopeStringAggregate)) {
+                long ist = measurements.getIntendedStartTimeNs();
+                long st = System.nanoTime();
+                Status res = db.aggregate(table, startkey, recordcount, fields, result);
+                long en = System.nanoTime();
+                measure("AGGREGATE", res, ist, st, en);
+                measurements.reportStatus("AGGREGATE", res);
+                return res;
+                }
+  }
 }
+
