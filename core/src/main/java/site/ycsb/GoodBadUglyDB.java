@@ -118,6 +118,21 @@ public class GoodBadUglyDB extends DB {
     return Status.OK;
   }
 
+  public Status arrayscan(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result) {
+          delay();
+
+          return Status.OK;
+  }
+
+  public Status search(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result) {
+          delay();
+
+          return Status.OK;
+  }
+
+
   /**
    * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the
    * record with the specified record key, overwriting any existing values with the same field name.
@@ -158,4 +173,42 @@ public class GoodBadUglyDB extends DB {
     delay();
     return Status.OK;
   }
+
+  @Override
+  public Status graphTraversal(String table, String startkey, int recordcount, Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+
+      return Status.OK;
+
+  }
+
+  @Override
+  public Status graphShortestPath(String table, String startkey, int recordcount, Set<String> fields,
+      Vector<HashMap<String, ByteIterator>> result) {
+
+      return Status.OK;
+
+  }
+
+  public Status join(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result) {
+          delay();
+
+          return Status.OK;
+  }
+
+  public Status group(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result) {
+          delay();
+
+          return Status.OK;
+  }
+
+  public Status aggregate(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result) {
+          delay();
+
+          return Status.OK;
+  }
 }
+
