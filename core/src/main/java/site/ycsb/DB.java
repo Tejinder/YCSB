@@ -38,8 +38,8 @@ import java.util.Vector;
  * methods commit, and some systems may return 'success' regardless of whether
  * or not a tuple with a matching key existed before the call.  Rather than dictate
  * the exact semantics of these methods, we recommend you either implement them
- * to match the database's default semantics, or the semantics of your 
- * target application.  For the sake of comparison between experiments we also 
+ * to match the database's default semantics, or the semantics of your
+ * target application.  For the sake of comparison between experiments we also
  * recommend you explain the semantics you chose when presenting performance results.
  */
 public abstract class DB {
@@ -102,6 +102,13 @@ public abstract class DB {
   public abstract Status scan(String table, String startkey, int recordcount, Set<String> fields,
                               Vector<HashMap<String, ByteIterator>> result);
 
+
+  public abstract Status arrayscan(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result);
+
+  public abstract Status search(String table, String startkey, int recordcount, Set<String> fields,
+          Vector<HashMap<String, ByteIterator>> result);
+
   /**
    * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the
    * record with the specified record key, overwriting any existing values with the same field name.
@@ -132,4 +139,20 @@ public abstract class DB {
    * @return The result of the operation.
    */
   public abstract Status delete(String table, String key);
+
+  public abstract Status graphTraversal(String table, String startkey, int recordcount, Set<String> fields,
+              Vector<HashMap<String, ByteIterator>> result);
+
+  public abstract Status graphShortestPath(String table, String startkey, int recordcount, Set<String> fields,
+              Vector<HashMap<String, ByteIterator>> result);
+
+  public abstract Status join(String table, String startkey, int recordcount, Set<String> fields,
+              Vector<HashMap<String, ByteIterator>> result) ;
+
+  public abstract Status group(String table, String startkey, int recordcount, Set<String> fields,
+              Vector<HashMap<String, ByteIterator>> result) ;
+
+  public abstract Status aggregate(String table, String startkey, int recordcount, Set<String> fields,
+              Vector<HashMap<String, ByteIterator>> result) ;
+
 }
