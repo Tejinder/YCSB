@@ -37,7 +37,7 @@ graphtraversalproportion=0
 graphshortestpathproportion=0.9
 
 table=measurementsgraphw2table
-#fieldlength=10000
+fieldlength=10000
 
 requestdistribution=zipfian
 hdrhistogram.percentiles=90,95,99
