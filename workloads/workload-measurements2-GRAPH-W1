@@ -35,7 +35,7 @@ insertproportion=0.05
 graphtraversalproportion=0.9
 
 table=measurementsgraphw1table
-#fieldlength=10000
+fieldlength=10000
 
 requestdistribution=zipfian
 hdrhistogram.percentiles=90,95,99
