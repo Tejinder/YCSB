@@ -36,7 +36,7 @@ insertproportion=0.05
 joinproportion=0
 groupproportion=0
 searchproportion=0.9
-#fieldlength=10000
+fieldlength=10000
 table=measurementsw8table
 
 requestdistribution=zipfian
