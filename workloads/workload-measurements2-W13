@@ -34,7 +34,7 @@ scanproportion=0.10
 insertproportion=0
 
 table=measurementsw13table
-#fieldlength=10000
+fieldlength=10000
 
 requestdistribution=zipfian
 hdrhistogram.percentiles=90,95,99
