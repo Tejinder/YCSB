@@ -37,7 +37,7 @@ groupproportion=0
 searchproportion=0
 
 table=measurementsw9table
-#fieldlength=10000
+fieldlength=10000
 
 requestdistribution=zipfian
 hdrhistogram.percentiles=90,95,99
