@@ -39,7 +39,7 @@ searchproportion=0
 aggregateproportion=0.9
 
 table=measurementsw11table
-#fieldlength=10000
+fieldlength=10000
 
 
 requestdistribution=zipfian
