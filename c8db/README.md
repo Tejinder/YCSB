@@ -59,3 +59,39 @@ Then, run the workload:
   
 - `c8db.password`
   - Password for the user to run the tests.
+
+
+
+
+This section describes how to run YCSB on C8DB on Linux (Ubuntu). 
+
+
+### 1. Clone this YCSB source code:
+
+	git clone https://github.com/Tejinder/YCSB.git
+	 
+	 
+### 2. Install Java
+	
+	sudo apt-get install openjdk-8-jdk
+	
+### 3. Install Maven 
+
+	sudo apt install maven -y
+	
+### 4. Check if python version 2 is installed or not 
+
+	apt install python-minimal
+	
+### 5. Go to YCSB directory and run 
+
+	mvn clean package
+	mvn -pl site.ycsb:c8db-binding -am clean package
+	
+### 6. Now you are ready, Load the data using 
+
+	./bin/ycsb load c8db -s -P /usr/local/YCSB/c8db-ycsb-tests/workloads/workload-measurements2-W1 -p c8db.host=<host-name> -p c8db.tenantName=ycsb-tenant_test.com -p c8db.databaseName=ycsb -p c8db.dropDBBeforeRun=true -p c8db.waitForSync=false -threads 50 -s 
+	
+### 7. Now you are ready, run the ycsb workload using 
+
+	./bin/ycsb run c8db -s -P /usr/local/YCSB/c8db-ycsb-tests/workloads/workload-measurements2-W1 -p c8db.host=<host-name> -p c8db.tenantName=ycsb-tenant_test.com -p c8db.databaseName=ycsb -p c8db.dropDBBeforeRun=true -p c8db.waitForSync=false -threads 50 -s 
