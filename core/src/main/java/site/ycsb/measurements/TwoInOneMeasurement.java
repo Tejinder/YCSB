@@ -63,6 +63,15 @@ public class TwoInOneMeasurement extends OneMeasurement {
   }
 
   /**
+   * This is called from a main thread, on orderly termination.
+   */
+  @Override
+  public String exportMeasurementsData(MeasurementsExporter exporter)  throws IOException {
+    thing1.exportMeasurements(exporter);
+    thing2.exportMeasurements(exporter);
+    return null;
+  }
+  /**
    * This is called periodically from the StatusThread. There's a single StatusThread per Client process.
    * We optionally serialize the interval to log on this opportunity.
    *
