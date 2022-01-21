@@ -211,7 +211,7 @@ public final class Client {
    *
    * @throws IOException Either failed to write to output stream or failed to close it.
    */
-  private static void exportMeasurements(Properties props, int opcount, long runtime)
+  private static void exportMeasurements(Properties props, int opcount, long runtime, String[] args)
       throws IOException {
     MeasurementsExporter exporter = null;
     try {
@@ -256,6 +256,25 @@ public final class Client {
 
       exporter.write("TOTAL_GC_TIME", "Time(ms)", totalGCTime);
       exporter.write("TOTAL_GC_TIME_%", "Time(%)", ((double) totalGCTime / runtime) * (double) 100);
+      
+   //   String ycsbTestLabel=props.getProperty("c8db.label", "label");;
+      
+      String ycsbloadtype="run";
+      for(int i=0;i<args.length;i++)
+      {
+    	if(args[i].equalsIgnoreCase("-load"))
+    	{
+    		ycsbloadtype="load";
+    	}
+    	/*
+    	if(args[i].equalsIgnoreCase("c8db.label"))
+    	{
+    		ycsbTestLabel="load";
+    	}*/
+      }
+     
+      
+  //    System.out.println("ycsbloadtype -->"+ ycsbloadtype);
       if (statusthread != null && statusthread.trackJVMStats()) {
         exporter.write("MAX_MEM_USED", "MBs", statusthread.getMaxUsedMem());
         exporter.write("MIN_MEM_USED", "MBs", statusthread.getMinUsedMem());
@@ -264,8 +283,21 @@ public final class Client {
         exporter.write("MAX_SYS_LOAD_AVG", "Load", statusthread.getMaxLoadAvg());
         exporter.write("MIN_SYS_LOAD_AVG", "Load", statusthread.getMinLoadAvg());
       }
-
-      Measurements.getMeasurements().exportMeasurements(exporter);
+      
+      if(ycsbloadtype.equals("run"))
+      {
+	     /* StringBuilder csvFileData = new StringBuilder();
+	      csvFileData.append("DateTime, Label, Throughput, OperationType, NoOfOperations, AverageLatency(us),  90thPercentileLatency(us),  95thPercentileLatency(us),  99thPercentileLatency(us)");
+	      csvFileData.append("\n");
+	      csvFileData.append(new Date().getTime()).append(",").append(ycsbTestLabel).append(",");
+	      csvFileData.append(throughput).append(",");
+	      */
+	      Measurements.getMeasurements().exportMeasurements(exporter, props, throughput, runtime);
+      }
+      else
+      {
+    	  Measurements.getMeasurements().exportMeasurements(exporter);
+      }
     } finally {
       if (exporter != null) {
         exporter.close();
@@ -276,7 +308,8 @@ public final class Client {
   @SuppressWarnings("unchecked")
   public static void main(String[] args) {
     Properties props = parseArguments(args);
-
+    
+    System.out.println("Inside Main method in Client");
     boolean status = Boolean.valueOf(props.getProperty(STATUS_PROPERTY, String.valueOf(false)));
     String label = props.getProperty(LABEL_PROPERTY, "");
 
@@ -389,7 +422,7 @@ public final class Client {
 
     try {
       try (final TraceScope span = tracer.newScope(CLIENT_EXPORT_MEASUREMENTS_SPAN)) {
-        exportMeasurements(props, opsDone, en - st);
+        exportMeasurements(props, opsDone, en - st, args);
       }
     } catch (IOException e) {
       System.err.println("Could not export measurements, error: " + e.getMessage());
