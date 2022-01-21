@@ -17,12 +17,17 @@
 
 package site.ycsb.measurements;
 
-import site.ycsb.Status;
-import site.ycsb.measurements.exporter.MeasurementsExporter;
-
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
+
+import site.ycsb.Status;
+import site.ycsb.measurements.exporter.MeasurementsExporter;
 
 /**
  * Collects latency measurements, and reports them when requested.
@@ -82,6 +87,7 @@ public class Measurements {
     this.props = props;
 
     String mTypeString = this.props.getProperty(MEASUREMENT_TYPE_PROPERTY, MEASUREMENT_TYPE_PROPERTY_DEFAULT);
+    
     switch (mTypeString) {
     case "histogram":
       measurementType = MeasurementType.HISTOGRAM;
@@ -181,7 +187,8 @@ public class Measurements {
    * value.
    */
   public void measure(String operation, int latency) {
-    if (measurementInterval == 1) {
+	
+	  if (measurementInterval == 1) {
       return;
     }
     try {
@@ -256,7 +263,8 @@ public class Measurements {
    * @throws IOException Thrown if the export failed.
    */
   public void exportMeasurements(MeasurementsExporter exporter) throws IOException {
-    for (OneMeasurement measurement : opToMesurementMap.values()) {
+      
+	  for (OneMeasurement measurement : opToMesurementMap.values()) {
       measurement.exportMeasurements(exporter);
     }
     for (OneMeasurement measurement : opToIntendedMesurementMap.values()) {
@@ -264,6 +272,73 @@ public class Measurements {
     }
   }
 
+ public void exportMeasurements(MeasurementsExporter exporter, Properties props, double throughput, long runtime) throws IOException {
+      
+	 String ycsbTestLabel=props.getProperty("c8db.label", "label");
+	 long currentDateTime = new Date().getTime();
+	 StringBuilder csvFileContent = new StringBuilder();
+	 
+	/* StringBuilder csvHeaderContent = new StringBuilder();
+	 
+	 csvHeaderContent.append("DateTime, Label, RunTime(ms), Throughput(ops/sec), OperationType, NoOfOperations, AverageLatency(us),  90thPercentileLatency(us),  95thPercentileLatency(us),  99thPercentileLatency(us)");
+	 csvHeaderContent.append("\n");
+   */
+	 
+	for (OneMeasurement measurement : opToMesurementMap.values()) {
+		csvFileContent.append(currentDateTime).append(",").append(ycsbTestLabel).append(",");
+		csvFileContent.append(runtime).append(",");  
+		csvFileContent.append(throughput).append(",");  
+		csvFileContent.append(measurement.exportMeasurementsData(exporter)).append("\n");
+    }
+    for (OneMeasurement measurement : opToIntendedMesurementMap.values()) {
+    	csvFileContent.append(currentDateTime).append(",").append(ycsbTestLabel).append(",");
+    	csvFileContent.append(runtime).append(",");  
+    	csvFileContent.append(throughput).append(",");
+    	csvFileContent.append(measurement.exportMeasurementsData(exporter)).append("\n");
+    }
+    
+    System.out.println("Final CSV Content-->"+ csvFileContent);
+  /*  try
+    {
+    	PrintWriter pw= new PrintWriter(new File("yscvtestresults.csv"));
+    	pw.write(csvFileContent.toString());
+	    pw.close();
+    }
+    catch(Exception e)
+    {
+    	e.printStackTrace();
+    }*/
+    try
+    {
+    	String csvfile = "ycsbresults/yscvtestresults.csv"; 
+    	
+    	File f = new File(csvfile);
+    	if(f.exists() && !f.isDirectory()) { 
+    		FileWriter fileWriter = new FileWriter(csvfile, true); //Set true for append mode
+            PrintWriter printWriter = new PrintWriter(fileWriter);
+            printWriter.println(csvFileContent.toString());  //New line
+            printWriter.close();
+    	}
+    	else
+    	{
+    		 StringBuilder csvHeaderContent = new StringBuilder();
+    		 csvHeaderContent.append("DateTime, Label, RunTime(ms), Throughput(ops/sec), OperationType, NoOfOperations, AverageLatency(us),  90thPercentileLatency(us),  95thPercentileLatency(us),  99thPercentileLatency(us)");
+    		 csvHeaderContent.append("\n");
+    		 FileWriter fileWriter = new FileWriter(csvfile, true); //Set true for append mode
+	         PrintWriter printWriter = new PrintWriter(fileWriter);
+	         printWriter.println(csvHeaderContent + csvFileContent.toString());  //New line
+	         printWriter.close();
+    	}
+    	
+        
+    }
+    catch(Exception e)
+    {
+    	e.printStackTrace();
+    }
+  }
+
+ 
   /**
    * Return a one line summary of the measurements.
    */
