@@ -73,6 +73,8 @@ public abstract class OneMeasurement {
    * @throws IOException Thrown if the export failed.
    */
   public abstract void exportMeasurements(MeasurementsExporter exporter) throws IOException;
+  
+  public abstract String exportMeasurementsData(MeasurementsExporter exporter)  throws IOException;
 
   protected final void exportStatusCounts(MeasurementsExporter exporter) throws IOException {
     for (Map.Entry<Status, AtomicInteger> entry : returncodes.entrySet()) {
