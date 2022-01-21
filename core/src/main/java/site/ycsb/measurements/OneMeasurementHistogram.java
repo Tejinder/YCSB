@@ -153,6 +153,42 @@ public class OneMeasurementHistogram extends OneMeasurement {
   }
 
   @Override
+  public String exportMeasurementsData(MeasurementsExporter exporter)  throws IOException {
+    double mean = totallatency / ((double) operations);
+    double variance = totalsquaredlatency / ((double) operations) - (mean * mean);
+    exporter.write(getName(), "Operations", operations);
+    exporter.write(getName(), "AverageLatency(us)", mean);
+    exporter.write(getName(), "LatencyVariance(us)", variance);
+    exporter.write(getName(), "MinLatency(us)", min);
+    exporter.write(getName(), "MaxLatency(us)", max);
+
+    long opcounter=0;
+    boolean done95th = false;
+    for (int i = 0; i < buckets; i++) {
+      opcounter += histogram[i];
+      if ((!done95th) && (((double) opcounter) / ((double) operations) >= 0.95)) {
+        exporter.write(getName(), "95thPercentileLatency(us)", i * 1000);
+        done95th = true;
+      }
+      if (((double) opcounter) / ((double) operations) >= 0.99) {
+        exporter.write(getName(), "99thPercentileLatency(us)", i * 1000);
+        break;
+      }
+    }
+
+    exportStatusCounts(exporter);
+
+    if (verbose) {
+      for (int i = 0; i < buckets; i++) {
+        exporter.write(getName(), Integer.toString(i), histogram[i]);
+      }
+      
+      exporter.write(getName(), ">" + buckets, histogramoverflow);
+    }
+    return null;
+  }
+  
+  @Override
   public String getSummary() {
     if (windowoperations == 0) {
       return "";
