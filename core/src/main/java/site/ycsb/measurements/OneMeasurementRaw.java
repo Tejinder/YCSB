@@ -188,6 +188,58 @@ public class OneMeasurementRaw extends OneMeasurement {
 
     exportStatusCounts(exporter);
   }
+  
+  @Override
+  public String exportMeasurementsData(MeasurementsExporter exporter) 
+      throws IOException {
+    // Output raw data points first then print out a summary of percentiles to
+    // stdout.
+
+    outputStream.println(getName() +
+        " latency raw data: op, timestamp(ms), latency(us)");
+    for (RawDataPoint point : measurements) {
+      outputStream.println(
+          String.format("%s,%d,%d", getName(), point.timeStamp(),
+              point.value()));
+    }
+    if (outputStream != System.out) {
+      outputStream.close();
+    }
+
+    int totalOps = measurements.size();
+    exporter.write(getName(), "Total Operations", totalOps);
+    if (totalOps > 0 && !noSummaryStats) {
+      exporter.write(getName(),
+          "Below is a summary of latency in microseconds:", -1);
+      exporter.write(getName(), "Average",
+          (double) totalLatency / (double) totalOps);
+
+      Collections.sort(measurements, new RawDataPointComparator());
+
+      exporter.write(getName(), "Min", measurements.get(0).value());
+      exporter.write(
+          getName(), "Max", measurements.get(totalOps - 1).value());
+      exporter.write(
+          getName(), "p1", measurements.get((int) (totalOps * 0.01)).value());
+      exporter.write(
+          getName(), "p5", measurements.get((int) (totalOps * 0.05)).value());
+      exporter.write(
+          getName(), "p50", measurements.get((int) (totalOps * 0.5)).value());
+      exporter.write(
+          getName(), "p90", measurements.get((int) (totalOps * 0.9)).value());
+      exporter.write(
+          getName(), "p95", measurements.get((int) (totalOps * 0.95)).value());
+      exporter.write(
+          getName(), "p99", measurements.get((int) (totalOps * 0.99)).value());
+      exporter.write(getName(), "p99.9",
+          measurements.get((int) (totalOps * 0.999)).value());
+      exporter.write(getName(), "p99.99",
+          measurements.get((int) (totalOps * 0.9999)).value());
+    }
+
+    exportStatusCounts(exporter);
+    return null;
+  }
 
   @Override
   public synchronized String getSummary() {
