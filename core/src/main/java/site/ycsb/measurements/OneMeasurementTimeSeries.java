@@ -130,6 +130,24 @@ public class OneMeasurementTimeSeries extends OneMeasurement {
       exporter.write(getName(), Long.toString(unit.time), unit.average);
     }
   }
+  
+  @Override
+  public String exportMeasurementsData(MeasurementsExporter exporter) throws IOException {
+    checkEndOfUnit(true);
+
+    exporter.write(getName(), "Operations", operations);
+    exporter.write(getName(), "AverageLatency(us)", (((double) totallatency) / ((double) operations)));
+    exporter.write(getName(), "MinLatency(us)", min);
+    exporter.write(getName(), "MaxLatency(us)", max);
+
+    // TODO: 95th and 99th percentile latency
+
+    exportStatusCounts(exporter);
+    for (SeriesUnit unit : measurements) {
+      exporter.write(getName(), Long.toString(unit.time), unit.average);
+    }
+    return null;
+  }
 
   @Override
   public String getSummary() {
