@@ -113,6 +113,94 @@ public class OneMeasurementHdrHistogram extends OneMeasurement {
       // we can close now
       log.close();
     }
+    
+  
+    exporter.write(getName(), "Operations", totalHistogram.getTotalCount());
+    exporter.write(getName(), "AverageLatency(us)", totalHistogram.getMean());
+    exporter.write(getName(), "MinLatency(us)", totalHistogram.getMinValue());
+    exporter.write(getName(), "MaxLatency(us)", totalHistogram.getMaxValue());
+
+    for (Double percentile : percentiles) {
+      exporter.write(getName(), ordinal(percentile) + "PercentileLatency(us)",
+          totalHistogram.getValueAtPercentile(percentile));
+      
+    }
+    
+   
+    exportStatusCounts(exporter);
+
+    // also export totalHistogram
+    if (verbose) {
+      for (HistogramIterationValue v : totalHistogram.recordedValues()) {
+        int value;
+        if (v.getValueIteratedTo() > (long)Integer.MAX_VALUE) {
+          value = Integer.MAX_VALUE;
+        } else {
+          value = (int)v.getValueIteratedTo();
+        }
+  
+        exporter.write(getName(), Integer.toString(value), (double)v.getCountAtValueIteratedTo());
+      }
+    }
+  }
+  
+  /**
+   * This is called from a main thread, on orderly termination.
+   */
+  @Override
+  public String exportMeasurementsData(MeasurementsExporter exporter) throws IOException {
+    // accumulate the last interval which was not caught by status thread
+    Histogram intervalHistogram = getIntervalHistogramAndAccumulate();
+    if (histogramLogWriter != null) {
+      histogramLogWriter.outputIntervalHistogram(intervalHistogram);
+      // we can close now
+      log.close();
+    }
+    
+   
+    StringBuilder csvData = new StringBuilder();
+    //csvData.append(",,,");
+    csvData.append(getName()).append(",").append(totalHistogram.getTotalCount()).append(",").append(totalHistogram.getMean()).append(",");
+    
+    exporter.write(getName(), "Operations", totalHistogram.getTotalCount());
+    exporter.write(getName(), "AverageLatency(us)", totalHistogram.getMean());
+    exporter.write(getName(), "MinLatency(us)", totalHistogram.getMinValue());
+    exporter.write(getName(), "MaxLatency(us)", totalHistogram.getMaxValue());
+
+    for (Double percentile : percentiles) {
+      exporter.write(getName(), ordinal(percentile) + "PercentileLatency(us)",
+          totalHistogram.getValueAtPercentile(percentile));
+      csvData.append(totalHistogram.getValueAtPercentile(percentile)).append(",");
+    }
+    
+    System.out.println("csvData-->"+ csvData);
+    exportStatusCounts(exporter);
+
+    // also export totalHistogram
+    if (verbose) {
+      for (HistogramIterationValue v : totalHistogram.recordedValues()) {
+        int value;
+        if (v.getValueIteratedTo() > (long)Integer.MAX_VALUE) {
+          value = Integer.MAX_VALUE;
+        } else {
+          value = (int)v.getValueIteratedTo();
+        }
+  
+        exporter.write(getName(), Integer.toString(value), (double)v.getCountAtValueIteratedTo());
+      }
+    }
+    
+    return csvData.toString();
+  }
+  
+  public void exportMeasurementsOLD(MeasurementsExporter exporter) throws IOException {
+    // accumulate the last interval which was not caught by status thread
+    Histogram intervalHistogram = getIntervalHistogramAndAccumulate();
+    if (histogramLogWriter != null) {
+      histogramLogWriter.outputIntervalHistogram(intervalHistogram);
+      // we can close now
+      log.close();
+    }
     exporter.write(getName(), "Operations", totalHistogram.getTotalCount());
     exporter.write(getName(), "AverageLatency(us)", totalHistogram.getMean());
     exporter.write(getName(), "MinLatency(us)", totalHistogram.getMinValue());
