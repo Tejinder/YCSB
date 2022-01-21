@@ -35,7 +35,7 @@ insertproportion=0
 
 table=measurements2w1table
 
-#fieldlength=10000
+fieldlength=10000
 
 requestdistribution=zipfian
 hdrhistogram.percentiles=90,95,99
